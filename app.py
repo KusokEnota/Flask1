@@ -1,6 +1,9 @@
-from flask import Flask, render_template
+from flask import Flask, request, render_template, redirect, url_for, make_response
+
 
 app = Flask(__name__)
+app.secret_key= '12345fffff'
+
 
 app.static_url_path = '/static'
 
@@ -15,6 +18,9 @@ def index():
 def odegda():  # put application's code here
     return render_template('odegda.html')
 
+@app.route('/vhod/', strict_slashes=False)
+def vhod():
+    return render_template('vhod.html')
 
 @app.route('/obuv/', strict_slashes=False)
 @app.route('/obuv.html/', strict_slashes=False)
@@ -24,6 +30,30 @@ def obuv():
 @app.route('/kurtka/')
 def kurtka():
     return  render_template('kurtka.html')
+
+@app.route('/set_cookie', methods=['POST'])
+def set_cookie():
+    if request.method == 'POST':
+        user_name = request.form.get('name')
+        user_email = request.form.get('email')
+        response = make_response(redirect(url_for('welcome')))
+        response.set_cookie('user_name', user_name)
+        response.set_cookie('user_email', user_email)
+
+        return response
+
+@app.route('/welcome')
+def welcome():
+    user_name = request.cookies.get('user_name')
+    return render_template('welcome.html', user_name=user_name)
+
+@app.route('/logout')
+def logout():
+    response = make_response(redirect(url_for('index')))
+    response.delete_cookie('user_name')
+    response.delete_cookie('user_email')
+
+    return response
 
 @app.route('/news/')
 def news():
